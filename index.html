@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 야구 직관 스타일은?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root {
+    --color-primary: #1c339b;
+    --color-border: #d9d9d9;
+    --color-border-selected: #848f91;
+    --color-text: #151515;
+    --color-text-muted: #606060;
+    --color-track: #efeff0;
+    --color-disabled: #d9d9d9;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #fff;
+    color: var(--color-text);
+    display: flex;
+    justify-content: center;
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 402px;
+    min-height: 100dvh;
+    background: #fff;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .screen {
+    display: none;
+    flex-direction: column;
+    min-height: 100dvh;
+    padding: 24px 20px 32px;
+  }
+
+  .screen.active {
+    display: flex;
+  }
+
+  /* ---- Intro ---- */
+  #screen-intro {
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    padding-top: 64px;
+  }
+
+  .intro-logo {
+    width: 189px;
+    height: auto;
+    margin-top: 40px;
+    margin-bottom: 32px;
+  }
+
+  .intro-title {
+    font-weight: 700;
+    font-size: 25px;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .intro-spacer { flex: 1; }
+
+  /* ---- Buttons ---- */
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 10px;
+    background: var(--color-primary);
+    color: #fff;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .btn-primary:disabled {
+    background: var(--color-disabled);
+    cursor: not-allowed;
+  }
+
+  /* Figma spec widths: intro CTA 230px, question/result CTA 336px */
+  #btn-start { max-width: 230px; }
+  #btn-next { max-width: 336px; }
+
+  .btn-secondary {
+    display: block;
+    margin: 20px auto 0;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-family: inherit;
+    font-size: 14px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  /* ---- Question nav bar ---- */
+  .q-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 328px;
+    margin: 0 auto 8px;
+  }
+
+  .q-nav-arrow {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text);
+    visibility: visible;
+  }
+
+  .q-nav-arrow:disabled {
+    visibility: hidden;
+    cursor: default;
+  }
+
+  .q-nav-arrow svg { width: 20px; height: 20px; }
+
+  .q-progress-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 5px;
+    background: var(--color-track);
+    overflow: hidden;
+  }
+
+  .q-progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: var(--color-primary);
+    transition: width 0.25s ease;
+  }
+
+  .q-label {
+    text-align: center;
+    font-weight: 600;
+    font-size: 18px;
+    margin: 4px 0 24px;
+  }
+
+  .q-emoji {
+    width: 150px;
+    height: 150px;
+    display: block;
+    margin: 0 auto 24px;
+    object-fit: contain;
+  }
+
+  .q-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.4;
+    margin: 0 0 28px;
+    white-space: pre-line;
+  }
+
+  .q-options {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 315px;
+    margin: 0 auto 28px;
+  }
+
+  .q-option {
+    width: 100%;
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-text);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+  }
+
+  .q-option.selected {
+    background: var(--color-primary);
+    border-color: var(--color-border-selected);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .q-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ---- Result ---- */
+  #screen-result {
+    align-items: center;
+    text-align: center;
+    padding-top: 40px;
+  }
+
+  .result-title {
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.6;
+    margin: 0 0 16px;
+  }
+
+  .result-tagline {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text);
+    margin: 0 0 32px;
+  }
+
+  .result-section-label {
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0 0 12px;
+  }
+
+  .result-box {
+    width: 100%;
+    max-width: 315px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 16px;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 20px;
+    letter-spacing: 0.02em;
+    margin-bottom: 32px;
+    white-space: pre-line;
+  }
+
+  .result-hashtags {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text-muted);
+    letter-spacing: 0.02em;
+    margin-bottom: 32px;
+  }
+</style>
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- Intro screen -->
+    <section id="screen-intro" class="screen active">
+      <div></div>
+      <img class="intro-logo" src="assets/logo.png" alt="야구 원정 로고">
+      <p class="intro-title">나의 야구 직관 스타일은?</p>
+      <div class="intro-spacer"></div>
+      <button class="btn-primary" id="btn-start" type="button">설문 시작</button>
+    </section>
+
+    <!-- Question screen -->
+    <section id="screen-question" class="screen">
+      <div class="q-nav">
+        <button class="q-nav-arrow" id="btn-prev" type="button" aria-label="이전 질문">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="q-progress-track"><div class="q-progress-fill" id="progress-fill"></div></div>
+        <button class="q-nav-arrow" id="btn-next-arrow" type="button" aria-label="다음 질문" disabled>
+          <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <p class="q-label" id="q-label"></p>
+      <img class="q-emoji" id="q-image" src="" alt="">
+      <p class="q-title" id="q-title"></p>
+      <div class="q-options" id="q-options"></div>
+      <div class="q-footer">
+        <button class="btn-primary" id="btn-next" type="button" disabled>다음으로</button>
+      </div>
+    </section>
+
+    <!-- Result screen -->
+    <section id="screen-result" class="screen">
+      <img class="q-emoji" id="result-image" src="" alt="">
+      <p class="result-title" id="result-title"></p>
+      <p class="result-tagline" id="result-tagline"></p>
+      <p class="result-section-label">결과 해설</p>
+      <div class="result-box" id="result-desc"></div>
+      <p class="result-section-label">추천 원정 코스</p>
+      <div class="result-box" id="result-course"></div>
+      <p class="result-hashtags" id="result-hashtags"></p>
+      <button class="btn-secondary" id="btn-restart" type="button">다시 시작하기</button>
+    </section>
+
+  </div>
+
+<script>
+  const QUESTIONS = [
+    {
+      text: "원정 직관을 결정했다.\n가장 먼저 찾아보는 것은?",
+      options: [
+        { label: "선발투수와 최근 경기력", scores: { baseball: 2, stadium: 1 } },
+        { label: "원정석과 응원석 위치", scores: { cheer: 2, stadium: 1 } },
+        { label: "구장 먹거리와 시설", scores: { stadium: 2, food: 1 } },
+        { label: "경기장 주변 관광지와 맛집", scores: { travel: 2, food: 1 } },
+      ],
+    },
+    {
+      text: "경기 시작 3시간 전에\n경기장 근처에 도착했다면?",
+      options: [
+        { label: "바로 구장에 가서 선수들 연습부터 본다", scores: { baseball: 2, stadium: 1 } },
+        { label: "응원도구를 챙기고 팬들과 분위기를 즐긴다", scores: { cheer: 2, record: 1 } },
+        { label: "구장 내부와 굿즈샵을 둘러본다", scores: { stadium: 2, record: 1 } },
+        { label: "주변 관광지나 맛집 한 곳을 다녀온다", scores: { travel: 2, food: 1 } },
+      ],
+    },
+    {
+      text: "원정 경기에서\n가장 기대되는 순간은?",
+      options: [
+        { label: "우리 팀이 결정적인 득점을 하는 순간", scores: { baseball: 2, cheer: 1 } },
+        { label: "원정팬들과 함께 응원가를 부르는 순간", scores: { cheer: 2, baseball: 1 } },
+        { label: "처음 가보는 야구장을 둘러보는 순간", scores: { stadium: 2, travel: 1 } },
+        { label: "직관 사진과 기록을 남기는 순간", scores: { record: 2, stadium: 1 } },
+      ],
+    },
+    {
+      text: "처음 방문하는 야구장에서\n가장 먼저 해보고 싶은 것은?",
+      options: [
+        { label: "좋은 좌석을 찾아 경기 자체에 집중하기", scores: { baseball: 2, stadium: 1 } },
+        { label: "원정 응원석에서 제대로 응원하기", scores: { cheer: 2, baseball: 1 } },
+        { label: "구장 한 바퀴를 돌며 시설과 먹거리 구경하기", scores: { stadium: 2, food: 1 } },
+        { label: "구장 앞에서 인증사진부터 남기기", scores: { record: 2, travel: 1 } },
+      ],
+    },
+    {
+      text: "야구장에 딱 하나만\n가져갈 수 있다면?",
+      options: [
+        { label: "선수 유니폼", scores: { baseball: 2, record: 1 } },
+        { label: "응원봉이나 응원도구", scores: { cheer: 2, baseball: 1 } },
+        { label: "구장에서 먹을 음식", scores: { food: 2, stadium: 1 } },
+        { label: "사진을 남길 카메라", scores: { record: 2, travel: 1 } },
+      ],
+    },
+    {
+      text: "원정팀이 아쉽게 졌다.\n경기 후 나는?",
+      options: [
+        { label: "오늘 경기 내용을 이야기하며 아쉬움을 달랜다", scores: { baseball: 2, record: 1 } },
+        { label: "함께 응원한 사람들과 뒤풀이한다", scores: { cheer: 2, food: 1 } },
+        { label: "야구장 근처 유명 맛집을 찾아간다", scores: { food: 2, travel: 1 } },
+        { label: "여행은 여행이니까 예정했던 야경이나 관광지를 간다", scores: { travel: 2, record: 1 } },
+      ],
+    },
+    {
+      text: "다른 지역으로 원정 직관을 갔을 때\n가장 해보고 싶은 것은?",
+      options: [
+        { label: "경기 전후 선수들을 가까이서 볼 기회를 찾아본다", scores: { baseball: 2, record: 1 } },
+        { label: "홈팀과 원정팀의 응원 문화를 직접 경험한다", scores: { cheer: 2, stadium: 1 } },
+        { label: "그 야구장에서만 파는 음식이나 굿즈를 찾아본다", scores: { stadium: 2, food: 1 } },
+        { label: "그 지역의 대표 관광지까지 함께 돌아본다", scores: { travel: 2, record: 1 } },
+      ],
+    },
+    {
+      text: "직관을 다녀온 뒤\n가장 남기고 싶은 것은?",
+      options: [
+        { label: "경기 결과와 기억에 남는 플레이", scores: { baseball: 2, record: 1 } },
+        { label: "함께 응원했던 현장의 분위기", scores: { cheer: 2, record: 1 } },
+        { label: "방문한 구장과 먹었던 음식", scores: { stadium: 2, food: 1 } },
+        { label: "사진, 방문 장소, 후기까지 담긴 나만의 직관 기록", scores: { record: 2, travel: 1 } },
+      ],
+    },
+    {
+      text: "1박 2일 원정 여행이라면\n어떤 일정이 가장 마음에 드는가?",
+      options: [
+        { label: "경기 전부터 야구장에 머물며 야구에 집중", scores: { baseball: 2, stadium: 1 } },
+        { label: "경기 전 팬들과 만나고 경기 후에도 함께 뒤풀이", scores: { cheer: 2, food: 1 } },
+        { label: "지역 맛집 → 구장 먹거리 → 경기 → 야식", scores: { food: 2, stadium: 1 } },
+        { label: "관광지 → 지역 맛집 → 경기 → 다음 날 관광", scores: { travel: 2, food: 1 } },
+      ],
+    },
+    {
+      text: "최고의 원정 직관이었다고\n느끼는 순간은?",
+      options: [
+        { label: "우리 팀의 멋진 승리를 직접 봤을 때", scores: { baseball: 2, cheer: 1 } },
+        { label: "원정석이 하나가 되어 뜨겁게 응원했을 때", scores: { cheer: 2, record: 1 } },
+        { label: "처음 가본 구장의 특별한 경험을 제대로 즐겼을 때", scores: { stadium: 2, record: 1 } },
+        { label: "야구도 보고 여행도 해서 그 도시 자체가 좋은 추억으로 남았을 때", scores: { travel: 2, record: 1 } },
+      ],
+    },
+  ];
+
+  const RESULTS = {
+    baseball: {
+      emoji: "⚾",
+      name: "야구 올인형",
+      tagline: "“원정의 시작도 끝도 결국 야구!”",
+      desc: "원정 여행에서 가장 중요한 건 역시 경기예요. 선발투수부터 선수들의 컨디션, 경기 흐름까지 꼼꼼히 챙기고 경기 시작 전부터 야구장에 머무는 것도 즐기는 스타일이에요. 여행도 좋지만 최고의 하루는 좋은 경기를 직접 보는 날입니다.",
+      hashtags: "#경기집중 #선수보러간다 #야구가우선",
+      course: "선수 연습 관람 → 야구장 입장 → 경기 집중 관람 → 경기 리뷰 → 야구 이야기하며 마무리",
+    },
+    cheer: {
+      emoji: "📣",
+      name: "응원 열정형",
+      tagline: "“목이 쉬어도 응원은 멈출 수 없다!”",
+      desc: "야구는 혼자 보는 것보다 함께 응원할 때 더 재미있다고 생각하는 스타일이에요. 원정석에서 응원가를 부르고 같은 팀 팬들과 함께 기뻐하는 순간을 중요하게 생각합니다. 승패도 중요하지만 원정팬들과 함께 만든 분위기 자체가 하나의 추억이에요.",
+      hashtags: "#원정석필수 #응원가풀장착 #함께라서직관",
+      course: "팬들과 만남 → 응원 준비 → 원정석 직관 → 승리 세리머니 → 경기 후 뒤풀이",
+    },
+    stadium: {
+      emoji: "🏟️",
+      name: "구장 탐험형",
+      tagline: "“경기만 보고 가기엔 야구장이 너무 아깝다!”",
+      desc: "처음 방문하는 야구장이라면 좌석부터 굿즈샵, 구장 먹거리까지 빠짐없이 둘러보는 스타일이에요. 승패만큼 그 구장에서만 할 수 있는 경험도 중요하게 생각합니다.",
+      hashtags: "#구장도장깨기 #구장먹거리 #굿즈샵필수",
+      course: "구장 주변 명소 → 굿즈샵 → 구장 먹거리 → 경기 관람 → 경기 후 맛집",
+    },
+    food: {
+      emoji: "🍗",
+      name: "먹방 원정형",
+      tagline: "“원정 경기의 또 다른 승부는 무엇을 먹느냐!”",
+      desc: "원정을 떠났다면 그 지역에서만 먹을 수 있는 음식과 야구장 먹거리를 놓칠 수 없는 스타일이에요. 선수 추천 맛집부터 현지인 맛집, 구장 대표 메뉴까지 찾아다니며 야구와 먹방을 함께 즐길 때 만족도가 가장 높습니다.",
+      hashtags: "#원정은먹방 #구장맛집탐방 #선수추천맛집",
+      course: "지역 대표 맛집 → 카페 → 구장 대표 먹거리 → 경기 관람 → 야식 맛집",
+    },
+    record: {
+      emoji: "📸",
+      name: "직관 기록형",
+      tagline: "“좋았던 직관은 기록해야 완성된다!”",
+      desc: "경기를 보는 순간뿐 아니라 그날의 사진과 장소, 기억까지 남기는 것을 좋아하는 스타일이에요. 구장 앞 인증사진부터 먹었던 음식, 기억에 남는 플레이까지 나중에 다시 꺼내볼 수 있는 직관 기록을 중요하게 생각합니다.",
+      hashtags: "#직관로그 #인증샷필수 #추억수집가",
+      course: "구장 인증사진 → 경기 전 명소 → 경기 관람 → 방문 장소 체크인 → 사진과 함께 직관로그 작성",
+    },
+    travel: {
+      emoji: "🗺️",
+      name: "야구 여행형",
+      tagline: "“야구도 보고, 여행도 해야 진짜 원정이지!”",
+      desc: "야구를 보기 위해 떠났지만 그 도시까지 제대로 즐기고 싶은 스타일이에요. 지역 관광지와 맛집을 돌아보고 마지막에 야구까지 즐기는 여행과 직관의 균형을 중요하게 생각합니다.",
+      hashtags: "#야구여행 #원정도여행이다 #도시까지즐기기",
+      course: "지역 대표 관광지 → 현지 맛집 → 야구장 → 경기 관람 → 야경 명소",
+    },
+  };
+
+  const TYPE_ORDER = ["baseball", "cheer", "stadium", "food", "record", "travel"];
+
+  const state = {
+    current: 0,
+    answers: new Array(QUESTIONS.length).fill(null), // selected option index per question
+  };
+
+  const screens = {
+    intro: document.getElementById("screen-intro"),
+    question: document.getElementById("screen-question"),
+    result: document.getElementById("screen-result"),
+  };
+
+  function showScreen(name) {
+    Object.values(screens).forEach((s) => s.classList.remove("active"));
+    screens[name].classList.add("active");
+    window.scrollTo(0, 0);
+  }
+
+  function renderQuestion() {
+    const idx = state.current;
+    const q = QUESTIONS[idx];
+    const selected = state.answers[idx];
+
+    document.getElementById("q-label").textContent = `${idx + 1}번 질문`;
+    document.getElementById("q-title").textContent = q.text;
+    document.getElementById("progress-fill").style.width = `${((idx + 1) / QUESTIONS.length) * 100}%`;
+    document.getElementById("q-image").src = `assets/imgs/Q${idx + 1}.png`;
+
+    const optionsEl = document.getElementById("q-options");
+    optionsEl.innerHTML = "";
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "q-option" + (selected === i ? " selected" : "");
+      btn.textContent = opt.label;
+      btn.addEventListener("click", () => selectOption(i));
+      optionsEl.appendChild(btn);
+    });
+
+    const prevBtn = document.getElementById("btn-prev");
+    prevBtn.disabled = idx === 0;
+
+    const nextArrow = document.getElementById("btn-next-arrow");
+    const nextBtn = document.getElementById("btn-next");
+    const hasAnswer = selected !== null;
+    nextArrow.disabled = !hasAnswer;
+    nextBtn.disabled = !hasAnswer;
+    nextBtn.textContent = idx === QUESTIONS.length - 1 ? "결과 보기" : "다음으로";
+  }
+
+  function selectOption(i) {
+    state.answers[state.current] = i;
+    renderQuestion();
+  }
+
+  function goPrev() {
+    if (state.current === 0) return;
+    state.current -= 1;
+    renderQuestion();
+  }
+
+  function goNext() {
+    if (state.answers[state.current] === null) return;
+    if (state.current === QUESTIONS.length - 1) {
+      showResult();
+      return;
+    }
+    state.current += 1;
+    renderQuestion();
+  }
+
+  function computeResultType() {
+    const totals = Object.fromEntries(TYPE_ORDER.map((t) => [t, 0]));
+    QUESTIONS.forEach((q, i) => {
+      const answerIdx = state.answers[i];
+      if (answerIdx === null) return;
+      const scores = q.options[answerIdx].scores;
+      Object.entries(scores).forEach(([type, val]) => {
+        totals[type] += val;
+      });
+    });
+    let bestType = TYPE_ORDER[0];
+    let bestScore = -Infinity;
+    TYPE_ORDER.forEach((type) => {
+      if (totals[type] > bestScore) {
+        bestScore = totals[type];
+        bestType = type;
+      }
+    });
+    return bestType;
+  }
+
+  function showResult() {
+    const type = computeResultType();
+    const r = RESULTS[type];
+    document.getElementById("result-image").src = `assets/imgs/${encodeURIComponent(r.name)}.png`;
+    document.getElementById("result-title").textContent = `당신은 「${r.name}」`;
+    document.getElementById("result-tagline").textContent = r.tagline;
+    document.getElementById("result-desc").textContent = r.desc;
+    document.getElementById("result-course").textContent = r.course;
+    document.getElementById("result-hashtags").textContent = r.hashtags;
+    showScreen("result");
+  }
+
+  function restart() {
+    state.current = 0;
+    state.answers = new Array(QUESTIONS.length).fill(null);
+    showScreen("intro");
+  }
+
+  document.getElementById("btn-start").addEventListener("click", () => {
+    renderQuestion();
+    showScreen("question");
+  });
+  document.getElementById("btn-prev").addEventListener("click", goPrev);
+  document.getElementById("btn-next-arrow").addEventListener("click", goNext);
+  document.getElementById("btn-next").addEventListener("click", goNext);
+  document.getElementById("btn-restart").addEventListener("click", restart);
+</script>
+</body>
+</html>
