@@ -267,6 +267,234 @@
     letter-spacing: 0.02em;
     margin-bottom: 32px;
   }
+
+  /* ==========================================================
+     Motion layer — 인터랙션 / 화면 전환 효과
+     (디자인 토큰, 레이아웃, 설문 구조는 변경하지 않음)
+     ========================================================== */
+
+  @keyframes screenOut {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateY(-8px); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes qInNext {
+    from { opacity: 0; transform: translateX(26px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes qInPrev {
+    from { opacity: 0; transform: translateX(-26px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.8); }
+    60%  { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+
+  @keyframes optionPop {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.045); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes ctaPulse {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.035); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes rippleOut {
+    to { transform: scale(2.6); opacity: 0; }
+  }
+
+  @keyframes sheen {
+    0%        { transform: translateX(-100%); }
+    55%, 100% { transform: translateX(220%); }
+  }
+
+  /* ---- Screen transitions ---- */
+  /* 부모는 크로스페이드만 — 세로 이동을 주면 100dvh를 넘겨 스크롤바가 생김 */
+  .screen.active {
+    animation: fadeIn 0.32s ease both;
+  }
+
+  .screen.active.leaving,
+  #screen-result.active.leaving {
+    animation: screenOut 0.2s ease both;
+  }
+
+  /* ---- Intro ---- */
+  #screen-intro.active .intro-logo {
+    animation:
+      popIn 0.6s cubic-bezier(0.22, 0.9, 0.28, 1) both,
+      floatY 4.6s ease-in-out 0.7s infinite;
+  }
+
+  #screen-intro.active .intro-title {
+    animation: fadeUp 0.5s cubic-bezier(0.22, 0.9, 0.28, 1) 0.16s backwards;
+  }
+
+  #screen-intro.active #btn-start {
+    animation: fadeUp 0.5s cubic-bezier(0.22, 0.9, 0.28, 1) 0.3s backwards;
+  }
+
+  /* ---- Press / hover feedback ---- */
+  .btn-primary,
+  .q-option {
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-primary {
+    transition:
+      transform 0.16s cubic-bezier(0.22, 0.9, 0.28, 1),
+      background-color 0.2s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .btn-primary:not(:disabled):hover {
+    box-shadow: 0 6px 16px rgba(28, 51, 155, 0.22);
+  }
+
+  .btn-primary:not(:disabled):active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 6px rgba(28, 51, 155, 0.18);
+  }
+
+  .btn-primary:disabled {
+    box-shadow: none;
+  }
+
+  .q-option {
+    transition:
+      transform 0.16s cubic-bezier(0.22, 0.9, 0.28, 1),
+      background-color 0.22s ease,
+      border-color 0.22s ease,
+      color 0.22s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .q-option:not(.selected):hover {
+    border-color: var(--color-border-selected);
+  }
+
+  .q-option:active {
+    transform: scale(0.97);
+  }
+
+  .q-option.selected {
+    box-shadow: 0 4px 14px rgba(28, 51, 155, 0.2);
+  }
+
+  .q-option.pop {
+    animation: optionPop 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .btn-secondary {
+    transition: transform 0.16s ease, color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-secondary:hover { color: var(--color-text); }
+  .btn-secondary:active { transform: scale(0.94); }
+
+  .q-nav-arrow {
+    transition:
+      transform 0.16s cubic-bezier(0.22, 0.9, 0.28, 1),
+      opacity 0.2s ease,
+      visibility 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .q-nav-arrow:not(:disabled):hover { transform: scale(1.12); }
+  .q-nav-arrow:not(:disabled):active { transform: scale(0.84); }
+  .q-nav-arrow:disabled { opacity: 0; }
+
+  /* ---- Ripple ---- */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.45);
+    transform: scale(0);
+    opacity: 0.9;
+    animation: rippleOut 0.55s ease-out forwards;
+  }
+
+  .q-option:not(.selected) .ripple {
+    background: rgba(28, 51, 155, 0.14);
+  }
+
+  /* ---- Progress bar ---- */
+  .q-progress-fill {
+    position: relative;
+    transition: width 0.45s cubic-bezier(0.22, 0.9, 0.28, 1);
+  }
+
+  .q-progress-fill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.5) 50%, transparent 80%);
+    transform: translateX(-100%);
+    animation: sheen 2.8s ease-in-out 0.8s infinite;
+  }
+
+  /* ---- Question emoji idle motion ---- */
+  #screen-question .q-emoji {
+    animation: floatY 4.6s ease-in-out 0.5s infinite;
+  }
+
+  /* ---- Result staggered reveal ---- */
+  #screen-result.active > * {
+    animation-name: fadeUp;
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.22, 0.9, 0.28, 1);
+    animation-fill-mode: backwards;
+  }
+
+  #screen-result.active > *:nth-child(1) { animation-delay: 0.04s; }
+  #screen-result.active > *:nth-child(2) { animation-delay: 0.12s; }
+  #screen-result.active > *:nth-child(3) { animation-delay: 0.18s; }
+  #screen-result.active > *:nth-child(4) { animation-delay: 0.24s; }
+  #screen-result.active > *:nth-child(5) { animation-delay: 0.30s; }
+  #screen-result.active > *:nth-child(6) { animation-delay: 0.36s; }
+  #screen-result.active > *:nth-child(7) { animation-delay: 0.42s; }
+  #screen-result.active > *:nth-child(8) { animation-delay: 0.48s; }
+  #screen-result.active > *:nth-child(9) { animation-delay: 0.54s; }
+
+  #screen-result.active #result-image {
+    animation:
+      popIn 0.62s cubic-bezier(0.22, 0.9, 0.28, 1) 0.04s both,
+      floatY 4.8s ease-in-out 0.8s infinite;
+  }
+
+  /* ---- Reduced motion ---- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -474,13 +702,85 @@
     result: document.getElementById("screen-result"),
   };
 
-  function showScreen(name) {
-    Object.values(screens).forEach((s) => s.classList.remove("active"));
-    screens[name].classList.add("active");
-    window.scrollTo(0, 0);
+  const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const EASE = "cubic-bezier(0.22, 0.9, 0.28, 1)";
+
+  function restartAnimation(el, value) {
+    el.style.animation = "none";
+    void el.offsetWidth; // reflow so the animation replays
+    el.style.animation = value;
   }
 
-  function renderQuestion() {
+  function spawnRipple(el, event) {
+    const rect = el.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const ripple = document.createElement("span");
+    ripple.className = "ripple";
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+    ripple.addEventListener("animationend", () => ripple.remove());
+    el.appendChild(ripple);
+  }
+
+  function showScreen(name, onEnter) {
+    const nextEl = screens[name];
+    const currentEl = Object.values(screens).find((s) => s.classList.contains("active"));
+
+    const apply = () => {
+      Object.values(screens).forEach((s) => s.classList.remove("active", "leaving"));
+      nextEl.classList.add("active");
+      window.scrollTo(0, 0);
+      if (onEnter) onEnter();
+    };
+
+    if (REDUCED_MOTION || !currentEl || currentEl === nextEl) {
+      apply();
+      return;
+    }
+    currentEl.classList.add("leaving");
+    setTimeout(apply, 200);
+  }
+
+  // 질문 간 이동 시 방향에 맞춘 슬라이드 인
+  function animateQuestionEnter(direction) {
+    if (REDUCED_MOTION) return;
+    const name = direction < 0 ? "qInPrev" : "qInNext";
+    const image = document.getElementById("q-image");
+    restartAnimation(
+      image,
+      `popIn 0.5s ${EASE} 0.04s backwards, floatY 4.6s ease-in-out 0.6s infinite`
+    );
+    const sequence = [
+      document.getElementById("q-label"),
+      document.getElementById("q-title"),
+      ...document.getElementById("q-options").children,
+    ];
+    sequence.forEach((el, i) => {
+      restartAnimation(el, `${name} 0.42s ${EASE} ${(0.05 + i * 0.045).toFixed(3)}s backwards`);
+    });
+  }
+
+  function updateNav() {
+    const idx = state.current;
+    const hasAnswer = state.answers[idx] !== null;
+    const nextArrow = document.getElementById("btn-next-arrow");
+    const nextBtn = document.getElementById("btn-next");
+    const wasDisabled = nextBtn.disabled;
+
+    document.getElementById("btn-prev").disabled = idx === 0;
+    nextArrow.disabled = !hasAnswer;
+    nextBtn.disabled = !hasAnswer;
+    nextBtn.textContent = idx === QUESTIONS.length - 1 ? "결과 보기" : "다음으로";
+
+    // 답을 처음 고른 순간 CTA가 살짝 튀어오르게
+    if (hasAnswer && wasDisabled && !REDUCED_MOTION) {
+      restartAnimation(nextBtn, "ctaPulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)");
+    }
+  }
+
+  function renderQuestion(direction) {
     const idx = state.current;
     const q = QUESTIONS[idx];
     const selected = state.answers[idx];
@@ -497,30 +797,32 @@
       btn.type = "button";
       btn.className = "q-option" + (selected === i ? " selected" : "");
       btn.textContent = opt.label;
-      btn.addEventListener("click", () => selectOption(i));
+      btn.addEventListener("click", () => selectOption(i, btn));
       optionsEl.appendChild(btn);
     });
 
-    const prevBtn = document.getElementById("btn-prev");
-    prevBtn.disabled = idx === 0;
-
-    const nextArrow = document.getElementById("btn-next-arrow");
-    const nextBtn = document.getElementById("btn-next");
-    const hasAnswer = selected !== null;
-    nextArrow.disabled = !hasAnswer;
-    nextBtn.disabled = !hasAnswer;
-    nextBtn.textContent = idx === QUESTIONS.length - 1 ? "결과 보기" : "다음으로";
+    updateNav();
+    if (direction) animateQuestionEnter(direction);
   }
 
-  function selectOption(i) {
+  function selectOption(i, btn) {
     state.answers[state.current] = i;
-    renderQuestion();
+    // 다시 그리지 않고 선택 상태만 바꿔서 눌린 효과가 그대로 보이게
+    Array.from(document.getElementById("q-options").children).forEach((el, k) => {
+      el.classList.toggle("selected", k === i);
+    });
+    if (btn && !REDUCED_MOTION) {
+      btn.classList.remove("pop");
+      void btn.offsetWidth;
+      btn.classList.add("pop");
+    }
+    updateNav();
   }
 
   function goPrev() {
     if (state.current === 0) return;
     state.current -= 1;
-    renderQuestion();
+    renderQuestion(-1);
   }
 
   function goNext() {
@@ -530,7 +832,7 @@
       return;
     }
     state.current += 1;
-    renderQuestion();
+    renderQuestion(1);
   }
 
   function computeResultType() {
@@ -574,7 +876,15 @@
 
   document.getElementById("btn-start").addEventListener("click", () => {
     renderQuestion();
-    showScreen("question");
+    showScreen("question", () => animateQuestionEnter(1));
+  });
+
+  // 버튼을 누르는 순간 물결 효과
+  document.addEventListener("pointerdown", (event) => {
+    if (REDUCED_MOTION) return;
+    const target = event.target.closest(".btn-primary, .q-option");
+    if (!target || target.disabled) return;
+    spawnRipple(target, event);
   });
   document.getElementById("btn-prev").addEventListener("click", goPrev);
   document.getElementById("btn-next-arrow").addEventListener("click", goNext);
