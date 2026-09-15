@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>나의 야구 직관 스타일은?</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js" integrity="sha384-dok87au0gKqJdxs7msEdBPNnKSRT+/mhTVzq+qOhcL464zXwvcrpjeWvyj1kCdq6" crossorigin="anonymous"></script>
 <style>
   :root {
     --color-primary: #1c339b;
@@ -96,6 +97,7 @@
   /* Figma spec widths: intro CTA 230px, question/result CTA 336px */
   #btn-start { max-width: 230px; }
   #btn-next { max-width: 336px; }
+  #btn-share { max-width: 336px; margin-top: 24px; }
 
   .btn-secondary {
     display: block;
@@ -481,6 +483,7 @@
   #screen-result.active > *:nth-child(7) { animation-delay: 0.42s; }
   #screen-result.active > *:nth-child(8) { animation-delay: 0.48s; }
   #screen-result.active > *:nth-child(9) { animation-delay: 0.54s; }
+  #screen-result.active > *:nth-child(10) { animation-delay: 0.60s; }
 
   #screen-result.active #result-image {
     animation:
@@ -539,6 +542,7 @@
       <p class="result-section-label">추천 원정 코스</p>
       <div class="result-box" id="result-course"></div>
       <p class="result-hashtags" id="result-hashtags"></p>
+      <button class="btn-primary" id="btn-share" type="button">카카오톡으로 공유하기</button>
       <button class="btn-secondary" id="btn-restart" type="button">다시 시작하기</button>
     </section>
 
@@ -691,9 +695,18 @@
 
   const TYPE_ORDER = ["baseball", "cheer", "stadium", "food", "record", "travel"];
 
+  // 카카오 JavaScript 키. 노출돼도 되는 키다 — 콘솔의 Web 플랫폼 도메인 화이트리스트가 보호한다.
+  // 공유가 안 뜨면 콘솔 > 앱 설정 > 플랫폼 > Web 에 현재 도메인이 등록돼 있는지부터 확인.
+  const KAKAO_JS_KEY = "125c08199c141e638ee79d2b8c5d61bf";
+  // 설문 결과를 받을 엔드포인트. 비워두면 저장하지 않는다 (fire-and-forget).
+  const SUBMIT_URL = "";
+
+  if (window.Kakao && KAKAO_JS_KEY && !Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);
+
   const state = {
     current: 0,
     answers: new Array(QUESTIONS.length).fill(null), // selected option index per question
+    resultType: null,
   };
 
   const screens = {
@@ -835,7 +848,7 @@
     renderQuestion(1);
   }
 
-  function computeResultType() {
+  function computeTotals() {
     const totals = Object.fromEntries(TYPE_ORDER.map((t) => [t, 0]));
     QUESTIONS.forEach((q, i) => {
       const answerIdx = state.answers[i];
@@ -845,6 +858,10 @@
         totals[type] += val;
       });
     });
+    return totals;
+  }
+
+  function computeResultType(totals) {
     let bestType = TYPE_ORDER[0];
     let bestScore = -Infinity;
     TYPE_ORDER.forEach((type) => {
@@ -856,8 +873,62 @@
     return bestType;
   }
 
-  function showResult() {
-    const type = computeResultType();
+  // 현재 페이지 URL (쿼리 제거). 공유 링크와 이미지 절대경로의 기준.
+  const PAGE_URL = location.origin + location.pathname;
+
+  function submitResult(type, totals) {
+    if (!SUBMIT_URL) return;
+    const payload = JSON.stringify({
+      ts: new Date().toISOString(),
+      type,
+      answers: state.answers,
+      totals,
+      ua: navigator.userAgent,
+    });
+    // Apps Script 등 CORS preflight를 못 받는 곳도 있어 text/plain으로 보낸다.
+    fetch(SUBMIT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
+  }
+
+  function shareResult() {
+    const type = state.resultType;
+    if (!type) return;
+    const r = RESULTS[type];
+    const resultUrl = `${PAGE_URL}?type=${type}`;
+    if (!window.Kakao || !Kakao.isInitialized()) {
+      // SDK가 못 뜬 환경(키 미설정, 미등록 도메인 등)에서는 링크 복사로 대체
+      navigator.clipboard?.writeText(resultUrl);
+      alert("결과 링크를 복사했어요.");
+      return;
+    }
+    Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: `나의 야구 직관 스타일은 「${r.name}」`,
+        description: `${r.tagline}\n${r.hashtags}`,
+        imageUrl: `${PAGE_URL}assets/imgs/${encodeURIComponent(r.name)}.png`,
+        link: { mobileWebUrl: resultUrl, webUrl: resultUrl },
+      },
+      buttons: [
+        { title: "결과 보기", link: { mobileWebUrl: resultUrl, webUrl: resultUrl } },
+        { title: "나도 테스트하기", link: { mobileWebUrl: PAGE_URL, webUrl: PAGE_URL } },
+      ],
+    });
+  }
+
+  // type을 주면 그 결과를 바로 보여준다 (공유 링크로 들어온 경우). 없으면 답변으로 계산 + 저장.
+  function showResult(type) {
+    if (!type) {
+      const totals = computeTotals();
+      type = computeResultType(totals);
+      submitResult(type, totals);
+    }
+    state.resultType = type;
     const r = RESULTS[type];
     document.getElementById("result-image").src = `assets/imgs/${encodeURIComponent(r.name)}.png`;
     document.getElementById("result-title").textContent = `당신은 「${r.name}」`;
@@ -871,6 +942,8 @@
   function restart() {
     state.current = 0;
     state.answers = new Array(QUESTIONS.length).fill(null);
+    state.resultType = null;
+    if (location.search) history.replaceState(null, "", PAGE_URL);
     showScreen("intro");
   }
 
@@ -890,6 +963,11 @@
   document.getElementById("btn-next-arrow").addEventListener("click", goNext);
   document.getElementById("btn-next").addEventListener("click", goNext);
   document.getElementById("btn-restart").addEventListener("click", restart);
+  document.getElementById("btn-share").addEventListener("click", shareResult);
+
+  // 공유 링크(?type=cheer)로 들어오면 결과 화면부터 보여준다
+  const sharedType = new URLSearchParams(location.search).get("type");
+  if (sharedType && RESULTS[sharedType]) showResult(sharedType);
 </script>
 </body>
 </html>
