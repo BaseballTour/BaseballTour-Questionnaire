@@ -6,6 +6,29 @@
 <title>나의 야구 직관 스타일은?</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js" integrity="sha384-dok87au0gKqJdxs7msEdBPNnKSRT+/mhTVzq+qOhcL464zXwvcrpjeWvyj1kCdq6" crossorigin="anonymous"></script>
+<script type="module">
+  // Firebase Firestore — 설문 결과 저장용.
+  // 콘솔 > 프로젝트 설정 > 내 앱(웹) 의 firebaseConfig 를 아래에 붙여넣는다.
+  // apiKey 는 노출돼도 되는 식별자다 — 보안은 Firestore 규칙이 담당한다.
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC9gvnEjM7CziqYKoXqF1qjAUzYh3VMjig",
+    authDomain: "baseballtour.firebaseapp.com",
+    projectId: "baseballtour",
+    storageBucket: "baseballtour.firebasestorage.app",
+    messagingSenderId: "47630128963",
+    appId: "1:47630128963:web:0f81240c75dd4b5ac481f6",
+  };
+
+  if (firebaseConfig.projectId) {
+    const db = getFirestore(initializeApp(firebaseConfig));
+    // 일반 스크립트(아래 설문 로직)에서 호출할 수 있도록 window 에 노출
+    window.saveSurveyResult = (data) =>
+      addDoc(collection(db, "responses"), { ...data, createdAt: serverTimestamp() });
+  }
+</script>
 <style>
   :root {
     --color-primary: #1c339b;
@@ -698,8 +721,6 @@
   // 카카오 JavaScript 키. 노출돼도 되는 키다 — 콘솔의 Web 플랫폼 도메인 화이트리스트가 보호한다.
   // 공유가 안 뜨면 콘솔 > 앱 설정 > 플랫폼 > Web 에 현재 도메인이 등록돼 있는지부터 확인.
   const KAKAO_JS_KEY = "125c08199c141e638ee79d2b8c5d61bf";
-  // 설문 결과를 받을 엔드포인트. 비워두면 저장하지 않는다 (fire-and-forget).
-  const SUBMIT_URL = "";
 
   if (window.Kakao && KAKAO_JS_KEY && !Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);
 
@@ -876,23 +897,18 @@
   // 현재 페이지 URL (쿼리 제거). 공유 링크와 이미지 절대경로의 기준.
   const PAGE_URL = location.origin + location.pathname;
 
+  // 설문 결과를 Firestore 에 저장한다 (fire-and-forget). firebaseConfig 가 비어 있으면 저장하지 않는다.
   function submitResult(type, totals) {
-    if (!SUBMIT_URL) return;
-    const payload = JSON.stringify({
-      ts: new Date().toISOString(),
-      type,
-      answers: state.answers,
-      totals,
-      ua: navigator.userAgent,
-    });
-    // Apps Script 등 CORS preflight를 못 받는 곳도 있어 text/plain으로 보낸다.
-    fetch(SUBMIT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: payload,
-      keepalive: true,
-    }).catch(() => {});
+    if (!window.saveSurveyResult) return;
+    window
+      .saveSurveyResult({
+        ts: new Date().toISOString(),
+        type,
+        answers: state.answers,
+        totals,
+        ua: navigator.userAgent,
+      })
+      .catch((e) => console.warn("결과 저장 실패", e));
   }
 
   function shareResult() {
