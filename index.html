@@ -757,9 +757,24 @@
 
   const state = {
     current: 0,
-    answers: new Array(QUESTIONS.length).fill(null), // selected option index per question
+    answers: new Array(QUESTIONS.length).fill(null), // selected option index per question (원본 순서 기준)
+    optionOrder: [], // 문항별 보기 표시 순서 — 설문 시작 시 섞어서 이전/다음으로 오가도 유지
     resultType: null,
   };
+
+  function shuffled(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // 매 설문마다 보기 순서를 새로 섞는다. answers/채점은 원본 인덱스를 쓰므로 영향 없음
+  function shuffleOptions() {
+    state.optionOrder = QUESTIONS.map((q) => shuffled(q.options.map((_, i) => i)));
+  }
 
   const screens = {
     intro: document.getElementById("screen-intro"),
@@ -859,10 +874,12 @@
 
     const optionsEl = document.getElementById("q-options");
     optionsEl.innerHTML = "";
-    q.options.forEach((opt, i) => {
+    state.optionOrder[idx].forEach((i) => {
+      const opt = q.options[i];
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "q-option" + (selected === i ? " selected" : "");
+      btn.dataset.index = i;
       btn.textContent = opt.label;
       btn.addEventListener("click", () => selectOption(i, btn));
       optionsEl.appendChild(btn);
@@ -875,8 +892,8 @@
   function selectOption(i, btn) {
     state.answers[state.current] = i;
     // 다시 그리지 않고 선택 상태만 바꿔서 눌린 효과가 그대로 보이게
-    Array.from(document.getElementById("q-options").children).forEach((el, k) => {
-      el.classList.toggle("selected", k === i);
+    Array.from(document.getElementById("q-options").children).forEach((el) => {
+      el.classList.toggle("selected", Number(el.dataset.index) === i);
     });
     if (btn && !REDUCED_MOTION) {
       btn.classList.remove("pop");
@@ -1017,6 +1034,7 @@
   }
 
   document.getElementById("btn-start").addEventListener("click", () => {
+    shuffleOptions();
     renderQuestion();
     showScreen("question", () => animateQuestionEnter(1));
   });
