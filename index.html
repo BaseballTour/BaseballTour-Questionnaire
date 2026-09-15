@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>나의 야구 직관 스타일은?</title>
+<!-- OS 공유 시트로 링크를 보낼 때 카톡/메시지 등에서 보이는 미리보기.
+     크롤러는 JS를 안 돌리므로 ?type= 별로 다른 이미지는 못 보여준다 → 대표 이미지 하나로 통일 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="나의 야구 직관 스타일은?">
+<meta property="og:description" content="10개 질문으로 알아보는 나의 야구 직관 유형과 추천 원정 코스">
+<meta property="og:image" content="https://baseballtour.github.io/BaseballTour-Questionnaire/assets/logo.png">
+<meta property="og:url" content="https://baseballtour.github.io/BaseballTour-Questionnaire/">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js" integrity="sha384-dok87au0gKqJdxs7msEdBPNnKSRT+/mhTVzq+qOhcL464zXwvcrpjeWvyj1kCdq6" crossorigin="anonymous"></script>
 <script type="module">
@@ -121,6 +128,14 @@
   #btn-start { max-width: 230px; }
   #btn-next { max-width: 336px; }
   #btn-share { max-width: 336px; margin-top: 24px; }
+  #btn-share-native { max-width: 336px; margin-top: 10px; }
+
+  .btn-primary.btn-outline {
+    background: #fff;
+    color: var(--color-primary);
+    border: 1.5px solid var(--color-primary);
+  }
+  .btn-outline .ripple { background: rgba(28, 51, 155, 0.14); }
 
   .btn-secondary {
     display: block;
@@ -566,6 +581,7 @@
       <div class="result-box" id="result-course"></div>
       <p class="result-hashtags" id="result-hashtags"></p>
       <button class="btn-primary" id="btn-share" type="button">카카오톡으로 공유하기</button>
+      <button class="btn-primary btn-outline" id="btn-share-native" type="button" hidden>다른 앱으로 공유하기</button>
       <button class="btn-secondary" id="btn-restart" type="button">다시 시작하기</button>
     </section>
 
@@ -911,6 +927,20 @@
       .catch((e) => console.warn("결과 저장 실패", e));
   }
 
+  // OS 기본 공유 시트 (Web Share API). HTTPS + 사용자 클릭 안에서만 동작한다.
+  function shareNative() {
+    const type = state.resultType;
+    if (!type || !navigator.share) return;
+    const r = RESULTS[type];
+    navigator
+      .share({
+        title: `나의 야구 직관 스타일은 「${r.name}」`,
+        text: `${r.tagline}\n${r.hashtags}`,
+        url: `${PAGE_URL}?type=${type}`,
+      })
+      .catch(() => {}); // 사용자가 시트를 닫으면 AbortError — 무시
+  }
+
   function shareResult() {
     const type = state.resultType;
     if (!type) return;
@@ -980,6 +1010,10 @@
   document.getElementById("btn-next").addEventListener("click", goNext);
   document.getElementById("btn-restart").addEventListener("click", restart);
   document.getElementById("btn-share").addEventListener("click", shareResult);
+  const btnShareNative = document.getElementById("btn-share-native");
+  btnShareNative.addEventListener("click", shareNative);
+  // Web Share API 를 지원하는 환경(모바일 대부분, 데스크톱 Safari/Edge)에서만 노출
+  btnShareNative.hidden = !navigator.share;
 
   // 공유 링크(?type=cheer)로 들어오면 결과 화면부터 보여준다
   const sharedType = new URLSearchParams(location.search).get("type");
