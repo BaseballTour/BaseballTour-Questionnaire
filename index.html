@@ -43,6 +43,7 @@
     --color-border-selected: #848f91;
     --color-text: #151515;
     --color-text-muted: #606060;
+    --color-text-subtle: #818181;
     --color-track: #efeff0;
     --color-disabled: #d9d9d9;
   }
@@ -78,19 +79,21 @@
     display: flex;
   }
 
-  /* ---- Intro ---- */
+  /* ---- Intro ----
+     Figma(402×874) 기준: 로고 top 209 / 제목 top 423 / 부제 top 473 / 버튼 top 635.
+     세로 여백은 화면 높이에 비례시키되 상한을 Figma 값으로 둔다 */
   #screen-intro {
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     text-align: center;
-    padding-top: 64px;
+    padding-top: clamp(96px, 24dvh, 209px);
+    padding-bottom: clamp(40px, 22dvh, 192px);
   }
 
   .intro-logo {
-    width: 189px;
+    width: 234px;
     height: auto;
-    margin-top: 40px;
-    margin-bottom: 32px;
+    margin: 0 0 51px;
   }
 
   .intro-title {
@@ -100,7 +103,14 @@
     margin: 0;
   }
 
-  .intro-spacer { flex: 1; }
+  .intro-subtitle {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--color-text-subtle);
+    margin: 20px 0 0;
+  }
+
+  .intro-spacer { flex: 1; min-height: 40px; }
 
   /* ---- Buttons ---- */
   .btn-primary {
@@ -241,6 +251,7 @@
     font-weight: 600;
     font-size: 15px;
     letter-spacing: 0.02em;
+    word-break: keep-all; /* 긴 보기가 어절 단위로 줄바꿈되게 */
     cursor: pointer;
   }
 
@@ -392,8 +403,12 @@
     animation: fadeUp 0.5s cubic-bezier(0.22, 0.9, 0.28, 1) 0.16s backwards;
   }
 
+  #screen-intro.active .intro-subtitle {
+    animation: fadeUp 0.5s cubic-bezier(0.22, 0.9, 0.28, 1) 0.24s backwards;
+  }
+
   #screen-intro.active #btn-start {
-    animation: fadeUp 0.5s cubic-bezier(0.22, 0.9, 0.28, 1) 0.3s backwards;
+    animation: fadeUp 0.5s cubic-bezier(0.22, 0.9, 0.28, 1) 0.34s backwards;
   }
 
   /* ---- Press / hover feedback ---- */
@@ -543,11 +558,11 @@
 
     <!-- Intro screen -->
     <section id="screen-intro" class="screen active">
-      <div></div>
-      <img class="intro-logo" src="assets/logo.png" alt="야구 원정 로고">
+      <img class="intro-logo" src="assets/logo.png" alt="야구원정대 로고">
       <p class="intro-title">나의 야구 직관 스타일은?</p>
+      <p class="intro-subtitle">몇 가지 질문으로 알아보는 나만의 직관 유형!</p>
       <div class="intro-spacer"></div>
-      <button class="btn-primary" id="btn-start" type="button">설문 시작</button>
+      <button class="btn-primary" id="btn-start" type="button">GO</button>
     </section>
 
     <!-- Question screen -->
@@ -590,10 +605,10 @@
 <script>
   const QUESTIONS = [
     {
-      text: "원정 직관을 결정했다.\n가장 먼저 찾아보는 것은?",
+      text: "원정 직관을 결정 후\n가장 먼저 찾아보는 것은?",
       options: [
         { label: "선발투수와 최근 경기력", scores: { baseball: 2, stadium: 1 } },
-        { label: "원정석과 응원석 위치", scores: { cheer: 2, stadium: 1 } },
+        { label: "원정석과 응원석 위치", scores: { cheer: 2 } },
         { label: "구장 먹거리와 시설", scores: { stadium: 2, food: 1 } },
         { label: "경기장 주변 관광지와 맛집", scores: { travel: 2, food: 1 } },
       ],
@@ -601,10 +616,10 @@
     {
       text: "경기 시작 3시간 전에\n경기장 근처에 도착했다면?",
       options: [
-        { label: "바로 구장에 가서 선수들 연습부터 본다", scores: { baseball: 2, stadium: 1 } },
-        { label: "응원도구를 챙기고 팬들과 분위기를 즐긴다", scores: { cheer: 2, record: 1 } },
-        { label: "구장 내부와 굿즈샵을 둘러본다", scores: { stadium: 2, record: 1 } },
-        { label: "주변 관광지나 맛집 한 곳을 다녀온다", scores: { travel: 2, food: 1 } },
+        { label: "바로 구장에 가서 선수들 연습부터 본다", scores: { baseball: 2 } },
+        { label: "응원도구를 챙기고 현장 분위기를 즐긴다", scores: { cheer: 2, record: 1 } },
+        { label: "구장 내부와 굿즈샵을 둘러본다", scores: { stadium: 2 } },
+        { label: "주변 관광지나 맛집을 들렸다 온다", scores: { travel: 2, food: 1 } },
       ],
     },
     {
@@ -612,71 +627,71 @@
       options: [
         { label: "우리 팀이 결정적인 득점을 하는 순간", scores: { baseball: 2, cheer: 1 } },
         { label: "원정팬들과 함께 응원가를 부르는 순간", scores: { cheer: 2, baseball: 1 } },
-        { label: "처음 가보는 야구장을 둘러보는 순간", scores: { stadium: 2, travel: 1 } },
-        { label: "직관 사진과 기록을 남기는 순간", scores: { record: 2, stadium: 1 } },
+        { label: "새로운 야구장 시설을 둘러보는 순간", scores: { stadium: 2, travel: 1 } },
+        { label: "카메라에 잡히기 좋은 자리 찾아 앉기", scores: { record: 2, stadium: 1 } },
       ],
     },
     {
       text: "처음 방문하는 야구장에서\n가장 먼저 해보고 싶은 것은?",
       options: [
-        { label: "좋은 좌석을 찾아 경기 자체에 집중하기", scores: { baseball: 2, stadium: 1 } },
-        { label: "원정 응원석에서 제대로 응원하기", scores: { cheer: 2, baseball: 1 } },
-        { label: "구장 한 바퀴를 돌며 시설과 먹거리 구경하기", scores: { stadium: 2, food: 1 } },
-        { label: "구장 앞에서 인증사진부터 남기기", scores: { record: 2, travel: 1 } },
+        { label: "내 좌석 시야 확인하러 가기", scores: { baseball: 2, stadium: 1 } },
+        { label: "선수들이 입장하는 곳에서 기다려보기", scores: { cheer: 2, baseball: 1 } },
+        { label: "이 구장에서만 맛볼 수 있는 먹거리 주문하기", scores: { stadium: 2, food: 1 } },
+        { label: "야구장 인증샷 찍고 인스타 스토리 올리기", scores: { record: 2 } },
       ],
     },
     {
       text: "야구장에 딱 하나만\n가져갈 수 있다면?",
       options: [
-        { label: "선수 유니폼", scores: { baseball: 2, record: 1 } },
-        { label: "응원봉이나 응원도구", scores: { cheer: 2, baseball: 1 } },
-        { label: "구장에서 먹을 음식", scores: { food: 2, stadium: 1 } },
-        { label: "사진을 남길 카메라", scores: { record: 2, travel: 1 } },
+        { label: "선수 유니폼", scores: { baseball: 2 } },
+        { label: "응원봉이나 응원도구", scores: { cheer: 2 } },
+        { label: "에너지를 채워줄 치맥", scores: { food: 2 } },
+        { label: "아이폰 6S 감성 카메라", scores: { record: 2 } },
       ],
     },
     {
       text: "원정팀이 아쉽게 졌다.\n경기 후 나는?",
       options: [
-        { label: "오늘 경기 내용을 이야기하며 아쉬움을 달랜다", scores: { baseball: 2, record: 1 } },
-        { label: "함께 응원한 사람들과 뒤풀이한다", scores: { cheer: 2, food: 1 } },
-        { label: "야구장 근처 유명 맛집을 찾아간다", scores: { food: 2, travel: 1 } },
-        { label: "여행은 여행이니까 예정했던 야경이나 관광지를 간다", scores: { travel: 2, record: 1 } },
+        { label: "패배 이유를 분석하며 아쉬움을 달랜다", scores: { baseball: 2 } },
+        { label: "야구장 근처 펍에서 뒷풀이 한다", scores: { cheer: 2, food: 1 } },
+        { label: "미리 계획했던 유명 맛집을 찾아간다", scores: { food: 2 } },
+        { label: "숙소를 가기전 예정되었던 관광지를 간다", scores: { travel: 2 } },
       ],
     },
     {
-      text: "다른 지역으로 원정 직관을 갔을 때\n가장 해보고 싶은 것은?",
+      text: "원정 직관 중 옆자리 팬과 친해졌다!\n가장 먼저 나눌 이야기는?",
       options: [
-        { label: "경기 전후 선수들을 가까이서 볼 기회를 찾아본다", scores: { baseball: 2, record: 1 } },
-        { label: "홈팀과 원정팀의 응원 문화를 직접 경험한다", scores: { cheer: 2, stadium: 1 } },
-        { label: "그 야구장에서만 파는 음식이나 굿즈를 찾아본다", scores: { stadium: 2, food: 1 } },
-        { label: "그 지역의 대표 관광지까지 함께 돌아본다", scores: { travel: 2, record: 1 } },
+        { label: "이번 시즌 원정 승률이 어떻게 되세요?", scores: { baseball: 2 } },
+        { label: "이 구장 자주 오세요? 숨은 명당 같은 곳도 있어요?", scores: { cheer: 2, stadium: 1 } },
+        { label: "경기 끝나고 같이 뒷풀이 장소 가실래요?", scores: { stadium: 2, food: 1 } },
+        { label: "혹시 이 주변에 가볼 만한 곳 추천해주실 수 있어요?", scores: { travel: 2 } },
       ],
     },
     {
-      text: "직관을 다녀온 뒤\n가장 남기고 싶은 것은?",
+      text: "경기가 우천 취소됐다!\n갑자기 생긴 자유시간, 나는?",
       options: [
-        { label: "경기 결과와 기억에 남는 플레이", scores: { baseball: 2, record: 1 } },
-        { label: "함께 응원했던 현장의 분위기", scores: { cheer: 2, record: 1 } },
-        { label: "방문한 구장과 먹었던 음식", scores: { stadium: 2, food: 1 } },
-        { label: "사진, 방문 장소, 후기까지 담긴 나만의 직관 기록", scores: { record: 2, travel: 1 } },
+        { label: "아쉬운 마음에 오늘 경기와 선수들의 소식을 더 찾아본다", scores: { baseball: 2 } },
+        { label: "같이 온 팬들과 아쉬움을 털어내며 시간을 보낸다", scores: { cheer: 2 } },
+        { label: "여유롭게 구장 주변을 둘러볼 곳을 찾아본다", scores: { stadium: 2, food: 1 } },
+        { label: "계획에 없던 액티비티를 예매해 즉흥 여행을 떠난다", scores: { travel: 2, record: 1 } },
       ],
     },
     {
-      text: "1박 2일 원정 여행이라면\n어떤 일정이 가장 마음에 드는가?",
+      text: "가장 마음에 드는\n1박 2일 일정은?",
       options: [
-        { label: "경기 전부터 야구장에 머물며 야구에 집중", scores: { baseball: 2, stadium: 1 } },
-        { label: "경기 전 팬들과 만나고 경기 후에도 함께 뒤풀이", scores: { cheer: 2, food: 1 } },
-        { label: "지역 맛집 → 구장 먹거리 → 경기 → 야식", scores: { food: 2, stadium: 1 } },
-        { label: "관광지 → 지역 맛집 → 경기 → 다음 날 관광", scores: { travel: 2, food: 1 } },
+        { label: "일찍 구장 도착 → 선수들 연습 구경 → 경기 관람 → 숙소에서 경기 다시 보기", scores: { baseball: 2, stadium: 1 } },
+        { label: "일찍 구장 도착 → 굿즈샵 구경 → 응원가 연습 → 경기 후 한잔", scores: { cheer: 2, food: 1 } },
+        { label: "구장 주변 카페 방문 → 구장 먹거리 즐기기 → 경기 관람 → 구장 주변 맛집", scores: { food: 2, stadium: 1 } },
+        { label: "지역 명소 방문 → 현지 맛집 → 경기 관람 → 숙소 복귀 후 야식", scores: { travel: 2 } },
       ],
     },
     {
-      text: "최고의 원정 직관이었다고\n느끼는 순간은?",
+      text: "집에 돌아가는 길, 오늘 원정을 떠올리며\n가장 먼저 드는 생각은?",
       options: [
-        { label: "우리 팀의 멋진 승리를 직접 봤을 때", scores: { baseball: 2, cheer: 1 } },
-        { label: "원정석이 하나가 되어 뜨겁게 응원했을 때", scores: { cheer: 2, record: 1 } },
-        { label: "처음 가본 구장의 특별한 경험을 제대로 즐겼을 때", scores: { stadium: 2, record: 1 } },
-        { label: "야구도 보고 여행도 해서 그 도시 자체가 좋은 추억으로 남았을 때", scores: { travel: 2, record: 1 } },
+        { label: "“와… 오늘 이 경기는 진짜 직접 보길 잘했다.”", scores: { baseball: 2 } },
+        { label: "“오늘 텐션 미쳤다ㅋㅋ 다음 원정도 같이 가야지.”", scores: { cheer: 2, record: 1 } },
+        { label: "“여기 아직 못 가본 데가 있네. 다음엔 거기부터 가야겠다.”", scores: { stadium: 2, record: 1 } },
+        { label: "“야구 보러 온 건데 여행까지 제대로 하고 가네.”", scores: { travel: 2, record: 1 } },
       ],
     },
   ];
@@ -887,29 +902,35 @@
     renderQuestion(1);
   }
 
+  // 유형별 총점과 함께, 각 유형이 핵심 성향(+2)으로 선택된 횟수도 센다 (근소한 차이일 때 2차 판별용)
   function computeTotals() {
     const totals = Object.fromEntries(TYPE_ORDER.map((t) => [t, 0]));
+    const coreCounts = Object.fromEntries(TYPE_ORDER.map((t) => [t, 0]));
     QUESTIONS.forEach((q, i) => {
       const answerIdx = state.answers[i];
       if (answerIdx === null) return;
       const scores = q.options[answerIdx].scores;
       Object.entries(scores).forEach(([type, val]) => {
         totals[type] += val;
+        if (val === 2) coreCounts[type] += 1;
       });
     });
-    return totals;
+    return { totals, coreCounts };
   }
 
-  function computeResultType(totals) {
-    let bestType = TYPE_ORDER[0];
-    let bestScore = -Infinity;
-    TYPE_ORDER.forEach((type) => {
-      if (totals[type] > bestScore) {
-        bestScore = totals[type];
-        bestType = type;
-      }
-    });
-    return bestType;
+  // ① 총점이 가장 높은 유형. ② 1위와 2위 차이가 1점 이하면 +2 횟수가 많은 쪽.
+  //    그래도 같으면 총점 → TYPE_ORDER 순으로 결정한다.
+  function computeResultType({ totals, coreCounts }) {
+    const ranked = [...TYPE_ORDER].sort((a, b) => totals[b] - totals[a]);
+    const top = totals[ranked[0]];
+    const contenders = ranked.filter((t) => top - totals[t] <= 1);
+    if (contenders.length < 2) return ranked[0];
+    return contenders.sort(
+      (a, b) =>
+        coreCounts[b] - coreCounts[a] ||
+        totals[b] - totals[a] ||
+        TYPE_ORDER.indexOf(a) - TYPE_ORDER.indexOf(b)
+    )[0];
   }
 
   // 현재 페이지 URL (쿼리 제거). 공유 링크와 이미지 절대경로의 기준.
@@ -972,9 +993,9 @@
   // type을 주면 그 결과를 바로 보여준다 (공유 링크로 들어온 경우). 없으면 답변으로 계산 + 저장.
   function showResult(type) {
     if (!type) {
-      const totals = computeTotals();
-      type = computeResultType(totals);
-      submitResult(type, totals);
+      const score = computeTotals();
+      type = computeResultType(score);
+      submitResult(type, score.totals);
     }
     state.resultType = type;
     const r = RESULTS[type];
