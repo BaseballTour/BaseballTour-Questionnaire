@@ -839,6 +839,8 @@
     document.getElementById("q-title").textContent = q.text;
     document.getElementById("progress-fill").style.width = `${((idx + 1) / QUESTIONS.length) * 100}%`;
     document.getElementById("q-image").src = `assets/imgs/Q${idx + 1}.png`;
+    // 다음 질문 이미지를 미리 받아둬서 넘길 때 한 박자 늦게 뜨지 않게 한다
+    if (idx + 1 < QUESTIONS.length) new Image().src = `assets/imgs/Q${idx + 2}.png`;
 
     const optionsEl = document.getElementById("q-options");
     optionsEl.innerHTML = "";
